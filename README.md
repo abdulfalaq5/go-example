@@ -4,7 +4,7 @@ REST API yang dibangun menggunakan spesifikasi industri standar, mengusung arsit
 
 ---
 
-## 🏗️ Struktur Proyek (Clean Architecture)
+## Struktur Proyek (Clean Architecture)
 
 Prosedur arsitektur kita memecah logika fungsional dari infrastruktur ke berbagai lapisan:
 
@@ -33,7 +33,7 @@ Prosedur arsitektur kita memecah logika fungsional dari infrastruktur ke berbaga
 
 ---
 
-## 🛠️ Cara Menambahkan Fitur Barumu
+## Cara Menambahkan Fitur Barumu
 
 Dalam Clean Architecture, alur kontrol berjalan terbalik dari luar ke dalam: `Handler` -> `Service` -> `Repository`. Jika kamu ingin menambahkan fitur/domain baru, misalnya "Product", jalurnya seperti ini:
 
@@ -54,11 +54,11 @@ Dalam Clean Architecture, alur kontrol berjalan terbalik dari luar ke dalam: `Ha
    
 6. **Hubungkan di Entry Point:** (`cmd/api/main.go`)
    Di file utama, lakukan '*wiring/inject*':
-   `repo := repository.New...` 👉 `svc := service.New...(repo)` 👉 `h := handler.New...(svc)` 👉 `h.RegisterRoutes(v1)`
+   `repo := repository.New...`  `svc := service.New...(repo)`  `h := handler.New...(svc)`  `h.RegisterRoutes(v1)`
 
 ---
 
-## 🗄️ Panduan Migrasi Database
+## Panduan Migrasi Database
 
 Aplikasi ini menggunakan skema SQL murni untuk struktur tabel tanpa bantuan auto-migration ORM demi performa terbaik. Sangat disarankan menginstall alat standar seperti **[golang-migrate CLI](https://github.com/golang-migrate/migrate/tree/master/cmd/migrate)**.
 
@@ -80,7 +80,7 @@ Aplikasi ini menggunakan skema SQL murni untuk struktur tabel tanpa bantuan auto
 
 ---
 
-## 🚀 Setup & Cara Menjalankan
+## Setup & Cara Menjalankan
 
 ### Cara 1: Menjalankan Secara Asli (*Local Tanpa Docker*)
 
@@ -106,7 +106,7 @@ Aplikasi ini menggunakan skema SQL murni untuk struktur tabel tanpa bantuan auto
    make run    # (Ini otomatis menjalankan go run ./cmd/api/main.go)
    ```
 
-📝 *Catatan:* Perbarui Swagger *Documentation* sebelum rilis apabila terdapat *Handler* baru:
+*Catatan:* Perbarui Swagger *Documentation* sebelum rilis apabila terdapat *Handler* baru:
 ```bash
 make swag
 ```
@@ -119,7 +119,7 @@ Docker sangat berguna saat peluncuran Produksi (VPS/Server) maupun testing bersi
 
 **Perhatian Khusus (`.env` networking Docker):**
 Karena API ini dijalankan *di dalam kurungan container*, `localhost` bagi si *container* bermaksud *container itu sendiri*. Oleh karena itu, jika Aplikasi ini perlu menghubungi Postgres Database atau Storage Minio yang hidup sebagai sistem program komputer mu di luar docker, perbarui host koneksi kalian di `.env`:
-`localhost` ➡️ `host.docker.internal`
+`localhost` `host.docker.internal`
 
 *Contoh di `.env`:* `DB_MAIN_DSN=postgres://postgres:secret@host.docker.internal:5432/main_db...`
 
@@ -138,9 +138,9 @@ Karena API ini dijalankan *di dalam kurungan container*, `localhost` bagi si *co
 
 ---
 
-## 📖 Swagger API Documentation
+## Swagger API Documentation
 
-Server siap digunakan saat konsol menampilkan `🚀 Server running on port...`. 
+Server siap digunakan saat konsol menampilkan `Server running on port...`. 
 Buka *browser* anda pada tautan berikut untuk membaca interaktif *interface* API UI:
 
 - **Alamat Swagger:** `http://localhost:8080/swagger/index.html` *(Atau port lain yang anda pakai)*
