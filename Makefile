@@ -1,8 +1,9 @@
-.PHONY: run build tidy lint test
+.PHONY: run build tidy lint test swag
 
 APP_NAME=go-example
 BUILD_DIR=./bin
 MAIN=./cmd/api/main.go
+SWAG=$(shell go env GOPATH)/bin/swag
 
 ## run: start the development server
 run:
@@ -13,6 +14,15 @@ build:
 	@mkdir -p $(BUILD_DIR)
 	go build -o $(BUILD_DIR)/$(APP_NAME) $(MAIN)
 	@echo "Binary: $(BUILD_DIR)/$(APP_NAME)"
+
+## swag: regenerate Swagger docs (run after changing annotations)
+swag:
+	$(SWAG) init \
+		--generalInfo cmd/api/main.go \
+		--output docs \
+		--parseDependency \
+		--parseInternal
+	@echo "✅ Swagger docs updated → docs/"
 
 ## tidy: clean and sync dependencies
 tidy:

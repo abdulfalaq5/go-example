@@ -1,3 +1,20 @@
+// Package main is the entry point of the Go Example REST API.
+//
+//	@title			Go Example API
+//	@version		1.0
+//	@description	A clean-architecture REST API built with Gin and PostgreSQL.
+//	@termsOfService	http://swagger.io/terms/
+//
+//	@contact.name	Abdul Falaq
+//	@contact.url	https://github.com/abdulfalaq5
+//
+//	@license.name	MIT
+//	@license.url	https://opensource.org/licenses/MIT
+//
+//	@host		localhost:8080
+//	@BasePath	/
+//
+//	@schemes	http https
 package main
 
 import (
@@ -10,6 +27,8 @@ import (
 	"syscall"
 	"time"
 
+	_ "github.com/falaqmsi/go-example/docs" // swag generated docs
+
 	"github.com/falaqmsi/go-example/internal/config"
 	"github.com/falaqmsi/go-example/internal/handler"
 	"github.com/falaqmsi/go-example/internal/middleware"
@@ -18,6 +37,8 @@ import (
 	"github.com/falaqmsi/go-example/internal/storage"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func main() {
@@ -60,8 +81,14 @@ func main() {
 	r.Use(cors.Default())
 
 	// ── Routes ────────────────────────────────────────────────────────────────
+
+	// Swagger UI  →  GET /swagger/index.html
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	// System
 	r.GET("/health", healthHandler.Check)
 
+	// API v1
 	v1 := r.Group("/api/v1")
 	userHandler.RegisterRoutes(v1)
 
@@ -84,6 +111,7 @@ func main() {
 
 	go func() {
 		log.Printf("🚀 Server running on port %s (env: %s)", cfg.AppPort, cfg.AppEnv)
+		log.Printf("📖 Swagger UI → http://localhost:%s/swagger/index.html", cfg.AppPort)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("listen error: %v", err)
 		}

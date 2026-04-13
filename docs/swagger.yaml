@@ -1,0 +1,316 @@
+basePath: /
+definitions:
+  github_com_falaqmsi_go-example_internal_model.CreateUserInput:
+    description: Request body for creating a user.
+    properties:
+      email:
+        example: alice@example.com
+        type: string
+      name:
+        example: Alice
+        maxLength: 100
+        minLength: 2
+        type: string
+    required:
+    - email
+    - name
+    type: object
+  github_com_falaqmsi_go-example_internal_model.HealthStatus:
+    properties:
+      env:
+        type: string
+      status:
+        type: string
+      version:
+        type: string
+    type: object
+  github_com_falaqmsi_go-example_internal_model.UpdateUserInput:
+    description: Request body for updating a user.
+    properties:
+      email:
+        example: alice.updated@example.com
+        type: string
+      name:
+        example: Alice Updated
+        maxLength: 100
+        minLength: 2
+        type: string
+    required:
+    - email
+    - name
+    type: object
+  github_com_falaqmsi_go-example_internal_model.User:
+    description: Full user record returned by the API.
+    properties:
+      created_at:
+        example: "2026-04-13T08:00:00Z"
+        type: string
+      email:
+        example: alice@example.com
+        type: string
+      id:
+        example: 1
+        type: integer
+      name:
+        example: Alice
+        type: string
+      updated_at:
+        example: "2026-04-13T08:00:00Z"
+        type: string
+    type: object
+  github_com_falaqmsi_go-example_pkg_response.ErrorResponse:
+    description: Standard error response wrapper.
+    properties:
+      error: {}
+      message:
+        example: error description
+        type: string
+      meta:
+        $ref: '#/definitions/github_com_falaqmsi_go-example_pkg_response.Meta'
+      success:
+        example: false
+        type: boolean
+    type: object
+  github_com_falaqmsi_go-example_pkg_response.Meta:
+    description: Response metadata always present on every API response.
+    properties:
+      page:
+        example: 1
+        type: integer
+      page_size:
+        example: 10
+        type: integer
+      timestamp:
+        example: "2026-04-13T08:00:00Z"
+        type: string
+      total_rows:
+        example: 100
+        type: integer
+    type: object
+host: localhost:8080
+info:
+  contact:
+    name: Abdul Falaq
+    url: https://github.com/abdulfalaq5
+  description: A clean-architecture REST API built with Gin and PostgreSQL.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Go Example API
+  version: "1.0"
+paths:
+  /api/v1/users:
+    get:
+      description: Returns a list of all users ordered by ID ascending.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of users
+          schema:
+            properties:
+              data:
+                items:
+                  $ref: '#/definitions/github_com_falaqmsi_go-example_internal_model.User'
+                type: array
+              message:
+                type: string
+              meta:
+                $ref: '#/definitions/github_com_falaqmsi_go-example_pkg_response.Meta'
+              success:
+                type: boolean
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_falaqmsi_go-example_pkg_response.ErrorResponse'
+      summary: List all users
+      tags:
+      - Users
+    post:
+      consumes:
+      - application/json
+      description: Inserts a new user record. Email must be unique.
+      parameters:
+      - description: User payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_falaqmsi_go-example_internal_model.CreateUserInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User created
+          schema:
+            properties:
+              data:
+                $ref: '#/definitions/github_com_falaqmsi_go-example_internal_model.User'
+              message:
+                type: string
+              meta:
+                $ref: '#/definitions/github_com_falaqmsi_go-example_pkg_response.Meta'
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/github_com_falaqmsi_go-example_pkg_response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_falaqmsi_go-example_pkg_response.ErrorResponse'
+      summary: Create a new user
+      tags:
+      - Users
+  /api/v1/users/{id}:
+    delete:
+      description: Permanently removes a user record by ID.
+      parameters:
+      - description: User ID
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User deleted
+          schema:
+            properties:
+              message:
+                type: string
+              meta:
+                $ref: '#/definitions/github_com_falaqmsi_go-example_pkg_response.Meta'
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Invalid ID
+          schema:
+            $ref: '#/definitions/github_com_falaqmsi_go-example_pkg_response.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/github_com_falaqmsi_go-example_pkg_response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_falaqmsi_go-example_pkg_response.ErrorResponse'
+      summary: Delete a user
+      tags:
+      - Users
+    get:
+      description: Returns a single user record identified by its numeric ID.
+      parameters:
+      - description: User ID
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User found
+          schema:
+            properties:
+              data:
+                $ref: '#/definitions/github_com_falaqmsi_go-example_internal_model.User'
+              message:
+                type: string
+              meta:
+                $ref: '#/definitions/github_com_falaqmsi_go-example_pkg_response.Meta'
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Invalid ID
+          schema:
+            $ref: '#/definitions/github_com_falaqmsi_go-example_pkg_response.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/github_com_falaqmsi_go-example_pkg_response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_falaqmsi_go-example_pkg_response.ErrorResponse'
+      summary: Get a user by ID
+      tags:
+      - Users
+    put:
+      consumes:
+      - application/json
+      description: Updates the name and email of an existing user by ID.
+      parameters:
+      - description: User ID
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      - description: Update payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_falaqmsi_go-example_internal_model.UpdateUserInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User updated
+          schema:
+            properties:
+              data:
+                $ref: '#/definitions/github_com_falaqmsi_go-example_internal_model.User'
+              message:
+                type: string
+              meta:
+                $ref: '#/definitions/github_com_falaqmsi_go-example_pkg_response.Meta'
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Validation error or invalid ID
+          schema:
+            $ref: '#/definitions/github_com_falaqmsi_go-example_pkg_response.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/github_com_falaqmsi_go-example_pkg_response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_falaqmsi_go-example_pkg_response.ErrorResponse'
+      summary: Update an existing user
+      tags:
+      - Users
+  /health:
+    get:
+      description: Returns the current operational status of the API server.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Server is healthy
+          schema:
+            $ref: '#/definitions/github_com_falaqmsi_go-example_internal_model.HealthStatus'
+        "500":
+          description: Service unavailable
+          schema:
+            $ref: '#/definitions/github_com_falaqmsi_go-example_pkg_response.ErrorResponse'
+      summary: Health check
+      tags:
+      - Health
+schemes:
+- http
+- https
+swagger: "2.0"

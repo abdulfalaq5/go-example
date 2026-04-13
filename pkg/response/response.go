@@ -8,11 +8,21 @@ import (
 )
 
 // Meta is attached to every response and may carry pagination info.
+// @Description Response metadata always present on every API response.
 type Meta struct {
-	Timestamp string `json:"timestamp"`
-	Page      int    `json:"page,omitempty"`
-	PageSize  int    `json:"page_size,omitempty"`
-	TotalRows int    `json:"total_rows,omitempty"`
+	Timestamp string `json:"timestamp" example:"2026-04-13T08:00:00Z"`
+	Page      int    `json:"page,omitempty" example:"1"`
+	PageSize  int    `json:"page_size,omitempty" example:"10"`
+	TotalRows int    `json:"total_rows,omitempty" example:"100"`
+}
+
+// ErrorResponse is the standard error payload returned by the API.
+// @Description Standard error response wrapper.
+type ErrorResponse struct {
+	Success bool   `json:"success" example:"false"`
+	Message string `json:"message" example:"error description"`
+	Meta    Meta   `json:"meta"`
+	Error   any    `json:"error,omitempty"`
 }
 
 // newMeta returns a Meta pre-filled with the current UTC timestamp.
@@ -39,8 +49,8 @@ func Success(c *gin.Context, message string, data any) {
 	})
 }
 
-// SuccessWithMeta writes a 200 OK response with caller-supplied meta
-// (pagination, total_rows, etc.). The timestamp is always injected.
+// SuccessWithMeta writes a 200 OK response with caller-supplied meta.
+// The timestamp is always injected automatically.
 func SuccessWithMeta(c *gin.Context, message string, data any, meta *Meta) {
 	if meta == nil {
 		meta = newMeta()

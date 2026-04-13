@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/falaqmsi/go-example/internal/model"
 	"github.com/falaqmsi/go-example/internal/service"
 	"github.com/falaqmsi/go-example/pkg/response"
 	"github.com/gin-gonic/gin"
@@ -20,10 +21,11 @@ func NewHealthHandler(svc service.HealthService, env string) *HealthHandler {
 // Check godoc
 //
 //	@Summary		Health check
-//	@Description	Returns the current operational status of the API.
+//	@Description	Returns the current operational status of the API server.
 //	@Tags			Health
 //	@Produce		json
-//	@Success		200	{object}	model.HealthStatus
+//	@Success		200	{object}	model.HealthStatus	"Server is healthy"
+//	@Failure		500	{object}	response.ErrorResponse	"Service unavailable"
 //	@Router			/health [get]
 func (h *HealthHandler) Check(c *gin.Context) {
 	status, err := h.svc.Check(h.env)
@@ -33,3 +35,6 @@ func (h *HealthHandler) Check(c *gin.Context) {
 	}
 	response.Success(c, "server is healthy", status)
 }
+
+// ensure model import is used (swag scans this file for model references)
+var _ = model.HealthStatus{}
