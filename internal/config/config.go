@@ -13,8 +13,9 @@ import (
 type Config struct {
 	AppEnv   string
 	AppPort  string
-	LogLevel string
-	DB       DBConfig
+	LogLevel        string
+	KeycloakJWKSURL string
+	DB              DBConfig
 }
 
 // DBConfig holds configuration for all database connection pools.
@@ -37,9 +38,10 @@ func Load() (*Config, error) {
 	_ = godotenv.Load()
 
 	cfg := &Config{
-		AppEnv:   getEnv("APP_ENV", "production"),
-		AppPort:  getEnv("APP_PORT", "8080"),
-		LogLevel: getEnv("LOG_LEVEL", "info"),
+		AppEnv:          getEnv("APP_ENV", "production"),
+		AppPort:         getEnv("APP_PORT", "8080"),
+		LogLevel:        getEnv("LOG_LEVEL", "info"),
+		KeycloakJWKSURL: getEnv("KEYCLOAK_JWKS_URL", ""),
 		DB: DBConfig{
 			MainDSN:           getEnv("DB_MAIN_DSN", ""),
 			AuditDSN:          getEnv("DB_AUDIT_DSN", ""),

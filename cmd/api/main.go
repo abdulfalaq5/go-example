@@ -37,6 +37,7 @@ import (
 	"github.com/falaqmsi/go-example/internal/storage"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/MicahParks/keyfunc/v3"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -60,6 +61,13 @@ func main() {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
 	defer db.Close()
+
+	// ── Auth (Keycloak JWKS) ───────────────────────────────────────────────────
+	jwks, err := keyfunc.NewDefault([]string{cfg.KeycloakJWKSURL})
+	if err != nil {
+		log.Fatalf("Failed to create JWKS from resource at the given URL.\nError: %v", err)
+	}
+	authMiddleware := middleware.Auth(jwks)
 
 	// ── Wire dependencies ──────────────────────────────────────────────────────
 
@@ -90,7 +98,7 @@ func main() {
 
 	// API v1
 	v1 := r.Group("/api/v1")
-	userHandler.RegisterRoutes(v1)
+	userHandler.RegisterRoutes(v1, authMiddleware)
 
 	// 404 handler
 	r.NoRoute(func(c *gin.Context) {

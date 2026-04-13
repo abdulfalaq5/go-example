@@ -23,9 +23,9 @@ func NewUserHandler(svc service.UserService) *UserHandler {
 	return &UserHandler{svc: svc}
 }
 
-// RegisterRoutes attaches all user routes onto the given router group.
-func (h *UserHandler) RegisterRoutes(rg *gin.RouterGroup) {
-	users := rg.Group("/users")
+// RegisterRoutes attaches all user routes onto the given router group and secures them.
+func (h *UserHandler) RegisterRoutes(rg *gin.RouterGroup, authMiddleware gin.HandlerFunc) {
+	users := rg.Group("/users", authMiddleware)
 	{
 		users.GET("", h.GetAll)
 		users.POST("", h.Create)
