@@ -40,21 +40,21 @@ func main() {
 	}
 	defer db.Close()
 
-	// ── Dependencies (wire-up) ─────────────────────────────────────────────────
+	// ── Wire dependencies ──────────────────────────────────────────────────────
 
 	// Health
 	healthRepo := repository.NewHealthRepository()
 	healthSvc := service.NewHealthService(healthRepo)
 	healthHandler := handler.NewHealthHandler(healthSvc, cfg.AppEnv)
 
-	// User  (injected with DBMain)
+	// User
 	userRepo := repository.NewUserRepository(db.Main)
-	_ = userRepo // wire into service/handler when ready
+	userSvc := service.NewUserService(userRepo)
+	userHandler := handler.NewUserHandler(userSvc)
 
 	// ── Router ────────────────────────────────────────────────────────────────
 	r := gin.New()
 
-	// Global middleware
 	r.Use(middleware.Recovery())
 	r.Use(middleware.Logger())
 	r.Use(cors.Default())
@@ -62,9 +62,8 @@ func main() {
 	// ── Routes ────────────────────────────────────────────────────────────────
 	r.GET("/health", healthHandler.Check)
 
-	// API v1 group
 	v1 := r.Group("/api/v1")
-	_ = v1 // attach user routes here when handler is added
+	userHandler.RegisterRoutes(v1)
 
 	// 404 handler
 	r.NoRoute(func(c *gin.Context) {
@@ -90,7 +89,6 @@ func main() {
 		}
 	}()
 
-	// Wait for interrupt signal (SIGINT / SIGTERM)
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
