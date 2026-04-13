@@ -62,6 +62,12 @@ func main() {
 	}
 	defer db.Close()
 
+	// ── Storage Backend ────────────────────────────────────────────────────────
+	fileStore, err := storage.NewFileStorage(cfg.Storage)
+	if err != nil {
+		log.Fatalf("failed to initialize file storage module: %v", err)
+	}
+
 	// ── Auth (Keycloak JWKS) ───────────────────────────────────────────────────
 	jwks, err := keyfunc.NewDefault([]string{cfg.KeycloakJWKSURL})
 	if err != nil {
@@ -81,6 +87,10 @@ func main() {
 	userSvc := service.NewUserService(userRepo)
 	userHandler := handler.NewUserHandler(userSvc)
 
+	// Upload
+	uploadSvc := service.NewUploadService(fileStore)
+	uploadHandler := handler.NewUploadHandler(uploadSvc)
+
 	// ── Router ────────────────────────────────────────────────────────────────
 	r := gin.New()
 
@@ -99,6 +109,10 @@ func main() {
 	// API v1
 	v1 := r.Group("/api/v1")
 	userHandler.RegisterRoutes(v1, authMiddleware)
+	uploadHandler.RegisterRoutes(v1, authMiddleware)
+
+	// Static routes for local storage uploads fallback
+	r.Static("/uploads", cfg.Storage.LocalUploadDir)
 
 	// 404 handler
 	r.NoRoute(func(c *gin.Context) {

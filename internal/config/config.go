@@ -16,6 +16,18 @@ type Config struct {
 	LogLevel        string
 	KeycloakJWKSURL string
 	DB              DBConfig
+	Storage         StorageConfig
+}
+
+// StorageConfig holds configuration for the file storage service.
+type StorageConfig struct {
+	Type           string
+	LocalUploadDir string
+	MinioEndpoint  string
+	MinioAccessKey string
+	MinioSecretKey string
+	MinioBucket    string
+	MinioUseSSL    bool
 }
 
 // DBConfig holds configuration for all database connection pools.
@@ -50,6 +62,15 @@ func Load() (*Config, error) {
 			MaxConnLifetime:   getEnvDuration("DB_MAX_CONN_LIFETIME", 30*time.Minute),
 			MaxConnIdleTime:   getEnvDuration("DB_MAX_CONN_IDLE_TIME", 15*time.Minute),
 			HealthCheckPeriod: getEnvDuration("DB_HEALTH_CHECK_PERIOD", 1*time.Minute),
+		},
+		Storage: StorageConfig{
+			Type:           getEnv("STORAGE_TYPE", "local"),
+			LocalUploadDir: getEnv("LOCAL_UPLOAD_DIR", "./uploads"),
+			MinioEndpoint:  getEnv("MINIO_ENDPOINT", "localhost:9000"),
+			MinioAccessKey: getEnv("MINIO_ACCESS_KEY", "minioadmin"),
+			MinioSecretKey: getEnv("MINIO_SECRET_KEY", "minioadmin"),
+			MinioBucket:    getEnv("MINIO_BUCKET", "uploads"),
+			MinioUseSSL:    getEnvBool("MINIO_USE_SSL", false),
 		},
 	}
 
@@ -99,4 +120,18 @@ func getEnvDuration(key string, fallback time.Duration) time.Duration {
 		return fallback
 	}
 	return d
+}
+
+// getEnvBool parses a boolean env var (e.g. "true"), returning fallback
+// on parse error.
+func getEnvBool(key string, fallback bool) bool {
+	v := os.Getenv(key)
+	if v == "" {
+		return fallback
+	}
+	b, err := strconv.ParseBool(v)
+	if err != nil {
+		return fallback
+	}
+	return b
 }

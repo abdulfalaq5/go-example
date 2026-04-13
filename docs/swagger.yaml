@@ -100,6 +100,54 @@ info:
   title: Go Example API
   version: "1.0"
 paths:
+  /api/v1/upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Accepts a multipart form containing a file and uploads it to configured
+        storage (Local or MinIO)
+      parameters:
+      - description: The file to upload
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Upload successful
+          schema:
+            properties:
+              data:
+                properties:
+                  file_url:
+                    type: string
+                type: object
+              message:
+                type: string
+              meta:
+                $ref: '#/definitions/github_com_falaqmsi_go-example_pkg_response.Meta'
+              success:
+                type: boolean
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/github_com_falaqmsi_go-example_pkg_response.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_falaqmsi_go-example_pkg_response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_falaqmsi_go-example_pkg_response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Upload a file
+      tags:
+      - Upload
   /api/v1/users:
     get:
       description: Returns a list of all users ordered by ID ascending.

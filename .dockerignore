@@ -1,0 +1,19 @@
+.git
+.gitignore
+.env
+.idea
+.vscode/
+
+# Build outputs
+bin/
+api_binary
+main
+
+# Vendor directory (if used)
+vendor/
+
+# Local media uploads directory
+uploads/
+
+# Mac OS generated files
+.DS_Store

@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: go_example_api
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    volumes:
+      # Mount external upload directory directly to the container locally
+      - ./uploads:/app/uploads
+    restart: unless-stopped
+    # "host.docker.internal" helps cross-platform connection between Docker
+    # container and services existing statically on your Local machine
+    # e.g., using "host.docker.internal:9541" to talk to Postgres on your host OS
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
