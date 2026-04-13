@@ -20,7 +20,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -46,8 +46,18 @@ func main() {
 	// ── Config ────────────────────────────────────────────────────────────────
 	cfg, err := config.Load()
 	if err != nil {
-		log.Fatalf("failed to load config: %v", err)
+		slog.Error("failed to load config", slog.Any("error", err))
+		os.Exit(1)
 	}
+
+	// ── Structured Logging ────────────────────────────────────────────────────
+	logLevel := slog.LevelInfo
+	if cfg.LogLevel == "debug" {
+		logLevel = slog.LevelDebug
+	}
+	handlerOpts := &slog.HandlerOptions{Level: logLevel}
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, handlerOpts))
+	slog.SetDefault(logger)
 
 	// ── Gin mode ──────────────────────────────────────────────────────────────
 	if cfg.AppEnv == "production" {
@@ -58,20 +68,23 @@ func main() {
 	ctx := context.Background()
 	db, err := storage.Connect(ctx, cfg.DB)
 	if err != nil {
-		log.Fatalf("failed to connect to database: %v", err)
+		slog.Error("failed to connect to database", slog.Any("error", err))
+		os.Exit(1)
 	}
 	defer db.Close()
 
 	// ── Storage Backend ────────────────────────────────────────────────────────
 	fileStore, err := storage.NewFileStorage(cfg.Storage)
 	if err != nil {
-		log.Fatalf("failed to initialize file storage module: %v", err)
+		slog.Error("failed to initialize file storage module", slog.Any("error", err))
+		os.Exit(1)
 	}
 
 	// ── Auth (Keycloak JWKS) ───────────────────────────────────────────────────
 	jwks, err := keyfunc.NewDefault([]string{cfg.KeycloakJWKSURL})
 	if err != nil {
-		log.Fatalf("Failed to create JWKS from resource at the given URL.\nError: %v", err)
+		slog.Error("Failed to create JWKS from resource at the given URL", slog.Any("error", err))
+		os.Exit(1)
 	}
 	authMiddleware := middleware.Auth(jwks)
 
@@ -132,10 +145,11 @@ func main() {
 	}
 
 	go func() {
-		log.Printf("🚀 Server running on port %s (env: %s)", cfg.AppPort, cfg.AppEnv)
-		log.Printf("📖 Swagger UI → http://localhost:%s/swagger/index.html", cfg.AppPort)
+		slog.Info("Server starting", slog.String("port", cfg.AppPort), slog.String("env", cfg.AppEnv))
+		slog.Info(fmt.Sprintf("📖 Swagger UI → http://localhost:%s/swagger/index.html", cfg.AppPort))
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("listen error: %v", err)
+			slog.Error("listen error", slog.Any("error", err))
+			os.Exit(1)
 		}
 	}()
 
@@ -143,11 +157,12 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Println("Shutting down server…")
+	slog.Info("Shutting down server…")
 	shutCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(shutCtx); err != nil {
-		log.Fatalf("forced shutdown: %v", err)
+		slog.Error("forced shutdown", slog.Any("error", err))
+		os.Exit(1)
 	}
-	log.Println("Server exited cleanly.")
+	slog.Info("Server exited cleanly.")
 }
