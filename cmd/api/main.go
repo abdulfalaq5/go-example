@@ -15,6 +15,7 @@ import (
 	"github.com/falaqmsi/go-example/internal/middleware"
 	"github.com/falaqmsi/go-example/internal/repository"
 	"github.com/falaqmsi/go-example/internal/service"
+	"github.com/falaqmsi/go-example/internal/storage"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -31,10 +32,24 @@ func main() {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
+	// ── Database connections ───────────────────────────────────────────────────
+	ctx := context.Background()
+	db, err := storage.Connect(ctx, cfg.DB)
+	if err != nil {
+		log.Fatalf("failed to connect to database: %v", err)
+	}
+	defer db.Close()
+
 	// ── Dependencies (wire-up) ─────────────────────────────────────────────────
+
+	// Health
 	healthRepo := repository.NewHealthRepository()
 	healthSvc := service.NewHealthService(healthRepo)
 	healthHandler := handler.NewHealthHandler(healthSvc, cfg.AppEnv)
+
+	// User  (injected with DBMain)
+	userRepo := repository.NewUserRepository(db.Main)
+	_ = userRepo // wire into service/handler when ready
 
 	// ── Router ────────────────────────────────────────────────────────────────
 	r := gin.New()
@@ -47,11 +62,11 @@ func main() {
 	// ── Routes ────────────────────────────────────────────────────────────────
 	r.GET("/health", healthHandler.Check)
 
-	// API v1 group (extend here as the project grows)
+	// API v1 group
 	v1 := r.Group("/api/v1")
-	_ = v1 // remove when first real route is added
+	_ = v1 // attach user routes here when handler is added
 
-	// 404 / 405 handlers
+	// 404 handler
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{
 			"success": false,
@@ -81,9 +96,9 @@ func main() {
 	<-quit
 
 	log.Println("Shutting down server…")
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	shutCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	if err := srv.Shutdown(ctx); err != nil {
+	if err := srv.Shutdown(shutCtx); err != nil {
 		log.Fatalf("forced shutdown: %v", err)
 	}
 	log.Println("Server exited cleanly.")

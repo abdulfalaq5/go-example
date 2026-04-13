@@ -1,4 +1,3 @@
-// Package storage is the entry point for all data-store adapters
-// (e.g. PostgreSQL, Redis, MongoDB). Add concrete implementations here
-// and inject them into repositories via internal/repository.
+// Package storage contains data-store adapters.
+// See postgres.go for the PostgreSQL connection manager (pgxpool).
 package storage
