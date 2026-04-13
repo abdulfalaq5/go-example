@@ -73,6 +73,10 @@ Aplikasi ini menggunakan skema SQL murni untuk struktur tabel tanpa bantuan auto
   migrate -database "postgres://postgres:secret@localhost:5432/main_db?sslmode=disable" -path migrations up
   ```
 
+  ```bash
+  $(go env GOPATH)/bin/migrate -database "postgres://msiserver:Rubysa179596%21@localhost:9541/main_db?sslmode=disable" -path migrations up
+  ```
+
 - **Rollback (DOWN) Skema 1 langkah mundur:**
   ```bash
   migrate -database "postgres://postgres:secret@localhost:5432/main_db?sslmode=disable" -path migrations down 1
